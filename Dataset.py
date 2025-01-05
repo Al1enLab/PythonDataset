@@ -1,6 +1,7 @@
+import csv
 import operator
-from typing import Self, Hashable, Iterable, Callable, Any, NamedTuple
 import re
+from typing import Self, Hashable, Iterable, Callable, Any, NamedTuple, TextIO
 
 '''
 Dataset
@@ -422,3 +423,55 @@ class Dataset:
                 line_chunks.append(value)
             print(dataline(separator.join(line_chunks)))
         print(horizontal_line)
+
+class CSVDataset(Dataset):
+    '''De quoi utiliser un fichier CSV comme Dataset'''
+
+    def __init__(self):
+        '''Le dataset est vide tant qu'on n'a pas chargé les données depuis le fichier csv'''
+        super().__init__([ ])
+
+    def from_file(self,
+                    csv_file_handler: TextIO,
+                    fieldnames: list=None,
+                    restkey: str=None,
+                    restval: Any=None,
+                    dialect: csv.Dialect=None,
+                    *args, **kwargs) -> Self:
+        '''Initialise le dataset avec les données du fichier CSV'''
+        reader = csv.DictReader(csv_file_handler,
+                                fieldnames=fieldnames,
+                                restkey=restkey,
+                                restval=restval,
+                                dialect=dialect,
+                                *args, **kwargs)
+        super().__init__([ element for element in reader ])
+        return self
+
+    def to_file(self,
+                csv_file_handler: TextIO,
+                fields: list=None,
+                dialect: csv.Dialect=None,
+                *args, **kwargs) -> Self:
+        '''Ecrit le dataset vers un fichier CSV.
+        L'avantage, c'est qu'on peut supprimer des colonnes, ou en ajouter sous la forme d'expressions'''
+        # Si on n'a pas de champs, c'est qu'il faut tous les champs actuels
+        if fields is None:
+            fieldnames = [ ]
+            for _ in self:
+                for key in self.current_element.data:
+                    if key not in fieldnames:
+                        fieldnames.append(key)
+            fields = [ self[field] for field in fieldnames ]
+        # On prend les noms des champs pour le header...
+        fieldnames = [ field.alias for field in fields]
+        writer = csv.DictWriter(csv_file_handler,
+                                fieldnames=fieldnames,
+                                dialect=dialect)
+        # ... et on l'écrit...
+        writer.writeheader()
+        # ... puis on écrit le reste des données
+        for _ in self:
+            output = { field.alias: field.value for field in fields }
+            writer.writerow(output)
+        return self
