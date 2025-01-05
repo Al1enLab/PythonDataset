@@ -427,9 +427,9 @@ class Dataset:
 class CSVDataset(Dataset):
     '''De quoi utiliser un fichier CSV comme Dataset'''
 
-    def __init__(self):
+    def __init__(self, dataset: list[dict]=[ ], name=None):
         '''Le dataset est vide tant qu'on n'a pas chargé les données depuis le fichier csv'''
-        super().__init__([ ])
+        super().__init__(dataset=dataset, name=name)
 
     def from_file(self,
                     csv_file_handler: TextIO,
