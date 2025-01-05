@@ -27,82 +27,27 @@ class CompositeIterator:
         return self.__next_result()
 
     def __next_result(self) -> list[Any]:
+        # Si on n'a pas encore donné de résultat, il est temps d'initialiser tous les itérateurs
         if self.__last_result is None:
             self.__last_result = [ next(i) for i in self.__iterators ]
         else:
+            # On essaie d'itérer l'itérateur en cours...
             try:
                 self.__last_result[self.__iter_index] = next(self.__iterators[self.__iter_index])
                 self.__iter_index = 0
+            # ... et si c'est impossible...
             except StopIteration:
+                # ... soit on est à la dernière itération du dernier itérateur, auquel cas on arrête les itérations...
                 if self.__iter_index == len(self.__iterators) - 1:
                     raise StopIteration
+                # ... soit on passe à l'itérateur suivant, en prenant soin de réinitialiser l'itérateur en cours
                 else:
                     self.__iterators[self.__iter_index] = iter(self.__objects[self.__iter_index])
                     self.__last_result[self.__iter_index] = next(self.__iterators[self.__iter_index])
                     self.__iter_index += 1
                     self.__next_result()
+        # On a un résultat, on en retourne une copie dans l'ordre souhaité
         output = self.__last_result.copy()
-        if self.__reverse:
-            output.reverse()
-        return output
-    
-class old_CompositeIterator:
-    '''Itère plusieurs itérateurs comme un seul itérateur'''
-
-    def __init__(self, *objects: Iterable, right_to_left: bool = True) -> None:
-        '''objects : objest à itérer dans l'itérateur'''
-        self.__objects = [ obj for obj in objects if obj ]
-        # Commnencer l'itération "par la droite" (depuis le dernier objet)
-        self.__reverse = right_to_left
-        if self.__reverse:
-            self.__objects.reverse()
-        # Liste des résultats des itérateurs
-        self.__resultset = None
-        # Liste des iterables depuis les objets
-        self.__iterables = [ iter(obj) for obj in self.__objects ]
-        # Index du self__iterables à itérer
-        self.__iter_index = 0
-    
-    def __iter__(self) -> None:
-        # Réinitialisation des variables
-        self.__resultset = None
-        self.__iterables = [ iter(obj) for obj in self.__objects ]
-        self.__iter_index = 0
-        return self
-    
-    def __next__(self):
-        return self.__get_next()
-    
-    def __get_next(self):
-        '''Retourne le prochain itérateur'''
-        # Si on n'a pas encore de résultat, on prend le premier élément de chaque itérateur
-        if not self.__resultset:
-            self.__resultset = [ next(iterator) for iterator in self.__iterables ]
-        else:
-            # On est en train d'itérer un de nos itérables. On essaie le prochain.
-            try:
-                self.__resultset[self.__iter_index] = next(self.__iterables[self.__iter_index])
-                # On a le prochain de notre itérateur. On repart du premier itérateur.
-                self.__iter_index = 0
-            except StopIteration:
-                # On a atteint la limite de l'itérateur actuel...
-                if self.__iter_index == len(self.__iterables) - 1:
-                    # ... et c'est le dernier itérateur. On a atteint la fin de toutes les itérations
-                    raise StopIteration
-                else:
-                    # On remet à zéro notre itérateur...
-                    self.__iterables[self.__iter_index] = iter(self.__objects[self.__iter_index])
-                    # ... on met à jour notre resultset...
-                    self.__resultset[self.__iter_index] = next(self.__iterables[self.__iter_index])
-                    # ... et on passe à l'itérable suivant
-                    self.__iter_index += 1
-                    return self.__get_next()
-        return self.resultset
-    
-    @property
-    def resultset(self):
-        '''Retourne une copie (!) du resultset actuel, à l'envers si besoin'''
-        output = self.__resultset.copy()
         if self.__reverse:
             output.reverse()
         return output
