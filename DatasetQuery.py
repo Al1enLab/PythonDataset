@@ -3,9 +3,9 @@ De quoi faire des requêtes du genre SQL sur des datasets
 '''
 from typing import NamedTuple, Self, Any
 
-from QuerySyntax import Syntax, SelectQuerySyntax, UpdateQuerySyntax, DeleteQuerySyntax, DropQuerySyntax
-from Dataset import Dataset, DatasetField, Expression
-from CompositeIterator import CompositeIterator
+from .QuerySyntax import Syntax, SelectQuerySyntax, UpdateQuerySyntax, DeleteQuerySyntax, DropQuerySyntax
+from .Dataset import Dataset, DatasetField, Expression
+from .CompositeIterator import CompositeIterator
 
 '''
 Fonctions et classes "publiques"
