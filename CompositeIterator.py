@@ -51,20 +51,3 @@ class CompositeIterator:
         if self.__reverse:
             output.reverse()
         return output
-
-if __name__ == '__main__':
-
-    class BinDigit:
-
-        def __iter__(self):
-            self.digit = -1
-            return self
-        
-        def __next__(self):
-            if self.digit < 1:
-                self.digit += 1
-                return self.digit
-            raise StopIteration
-
-    for bits in CompositeIterator( BinDigit(), range(2), (0, 1) ):
-        print(f'{bits} ({int(''.join(list(map(str, bits))), 2)})')
